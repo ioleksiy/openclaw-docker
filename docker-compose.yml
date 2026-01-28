@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  moltbot:
+    image: ioleksiy/clawdbot-gateway:latest
+    container_name: moltbot-gateway
+    ports:
+      - "18789:18789"
+    volumes:
+      # Mount moltbot configuration and data
+      - ~/.clawdbot:/root/.clawdbot
+      # Optional: Mount workspace directory
+      - ~/clawd:/root/clawd
+    environment:
+      # Optional: Set environment variables
+      # - ANTHROPIC_API_KEY=your_key_here
+      # - OPENAI_API_KEY=your_key_here
+      # - TELEGRAM_BOT_TOKEN=your_token_here
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Optional: Add resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    # Optional: Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
