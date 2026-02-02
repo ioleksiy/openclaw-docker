@@ -161,7 +161,7 @@ See [CUSTOMIZATION.md](CUSTOMIZATION.md) for the complete update process.
 
 ### Adding More APT Packages
 
-Edit the `CLAWDBOT_DOCKER_APT_PACKAGES` build arg in [build.sh](build.sh) (in the docker buildx build command).
+Edit the `OPENCLAW_DOCKER_APT_PACKAGES` build arg in [build.sh](build.sh) (in the docker buildx build command).
 
 ### Adding More Tools
 

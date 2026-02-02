@@ -121,7 +121,7 @@ fi
 
 docker buildx build \
   --platform "$PLATFORMS" \
-  --build-arg CLAWDBOT_DOCKER_APT_PACKAGES="git gh jq curl wget unzip ffmpeg imagemagick poppler-utils python3 python3-pip" \
+  --build-arg OPENCLAW_DOCKER_APT_PACKAGES="git gh jq curl wget unzip ffmpeg imagemagick poppler-utils python3 python3-pip" \
   ${BUILD_TAGS} \
   --push \
   -f Dockerfile .

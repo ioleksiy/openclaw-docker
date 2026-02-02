@@ -27,10 +27,10 @@ RUN corepack enable
 
 WORKDIR /app
 
-ARG CLAWDBOT_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$CLAWDBOT_DOCKER_APT_PACKAGES" ]; then \
+ARG OPENCLAW_DOCKER_APT_PACKAGES=""
+RUN if [ -n "$OPENCLAW_DOCKER_APT_PACKAGES" ]; then \
       apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $OPENCLAW_DOCKER_APT_PACKAGES && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
     fi
@@ -81,14 +81,14 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build with A2UI skip flag - some releases may not include A2UI sources
-RUN CLAWDBOT_A2UI_SKIP_MISSING=1 pnpm build || \
+RUN OPENCLAW_A2UI_SKIP_MISSING=1 pnpm build || \
     (echo "Build failed, attempting without A2UI..." && \
-     pnpm build --filter '!@clawdbot/canvas-a2ui' || \
+     pnpm build --filter '!@openclaw/canvas-a2ui' || \
      (echo "Trying alternative build approach..." && \
       pnpm -r run build --if-present --workspace-concurrency=1))
 
 # Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
-ENV CLAWDBOT_PREFER_PNPM=1
+ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:install || echo "UI install step skipped or failed"
 RUN pnpm ui:build || echo "UI build step skipped or failed"
 

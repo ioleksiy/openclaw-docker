@@ -7,7 +7,7 @@ This document explains how to maintain the custom Dockerfile when the upstream O
 The custom Dockerfile is based on the upstream OpenClaw Dockerfile with the following additions:
 
 ### 1. Himalaya Email CLI (Multi-arch)
-**Location:** After `WORKDIR /app` and `ARG CLAWDBOT_DOCKER_APT_PACKAGES` section  
+**Location:** After `WORKDIR /app` and `ARG OPENCLAW_DOCKER_APT_PACKAGES` section  
 **Purpose:** Multi-architecture email client for command-line email management  
 **Version:** v1.1.0  
 **Architectures:** x86_64-linux (amd64), aarch64-linux (arm64)
@@ -120,7 +120,7 @@ Ensure the final Dockerfile has this structure:
 3. Install Bun
 4. Enable corepack
 5. WORKDIR /app
-6. ARG CLAWDBOT_DOCKER_APT_PACKAGES
+6. ARG OPENCLAW_DOCKER_APT_PACKAGES
 7. Conditional APT packages installation
 8. ⭐ CUSTOM: Himalaya installation
 9. ⭐ CUSTOM: mcporter installation
