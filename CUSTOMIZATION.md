@@ -1,10 +1,10 @@
 # Dockerfile Customization Guide
 
-This document explains how to maintain the custom Dockerfile when the upstream moltbot Dockerfile changes.
+This document explains how to maintain the custom Dockerfile when the upstream OpenClaw Dockerfile changes.
 
 ## Current Customizations
 
-The custom Dockerfile is based on the upstream moltbot Dockerfile with the following additions:
+The custom Dockerfile is based on the upstream OpenClaw Dockerfile with the following additions:
 
 ### 1. Himalaya Email CLI (Multi-arch)
 **Location:** After `WORKDIR /app` and `ARG CLAWDBOT_DOCKER_APT_PACKAGES` section  
@@ -67,12 +67,12 @@ See section 4 above for the combined installation command.
 
 ## How to Update When Upstream Changes
 
-When the upstream moltbot Dockerfile is updated, follow these steps:
+When the upstream OpenClaw Dockerfile is updated, follow these steps:
 
-### Step 1: Get the Latest Upstream Dockerfile
+### Step 1: Fetch the Latest Upstream Dockerfile
 
 ```bash
-curl -o Dockerfile.upstream https://raw.githubusercontent.com/moltbot/moltbot/refs/heads/main/Dockerfile
+curl -o Dockerfile.upstream https://raw.githubusercontent.com/openclaw/openclaw/refs/heads/main/Dockerfile
 ```
 
 ### Step 2: Identify the Insertion Point
@@ -96,9 +96,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 Update the header section at the top of the Dockerfile:
 ```dockerfile
 # =============================================================================
-# CUSTOM DOCKERFILE FOR MOLTBOT
+# CUSTOM DOCKERFILE FOR OPENCLAW
 # =============================================================================
-# Based on: https://raw.githubusercontent.com/moltbot/moltbot/refs/heads/main/Dockerfile
+# Based on: https://raw.githubusercontent.com/openclaw/openclaw/refs/heads/main/Dockerfile
 # Last synced: YYYY-MM-DD  # <-- Update this date
 #
 # CUSTOM ADDITIONS (search for "CUSTOM:" comments):
@@ -146,7 +146,7 @@ You can use this script to semi-automate the update process:
 # update-dockerfile.sh
 
 echo "Fetching latest upstream Dockerfile..."
-curl -o Dockerfile.upstream https://raw.githubusercontent.com/moltbot/moltbot/refs/heads/main/Dockerfile
+curl -o Dockerfile.upstream https://raw.githubusercontent.com/openclaw/openclaw/refs/heads/main/Dockerfile
 
 echo ""
 echo "Please manually:"
@@ -165,8 +165,8 @@ echo "Upstream file saved as: Dockerfile.upstream"
 After updating, verify that all tools are present:
 
 ```bash
-docker build -t test-moltbot .
-docker run --rm test-moltbot /bin/bash -c "
+docker build -t test-openclaw .
+docker run --rm test-openclaw /bin/bash -c "
   echo '=== Checking installed tools ===' && \
   himalaya --version && \
   mcporter --version && \

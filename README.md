@@ -1,12 +1,12 @@
-# Moltbot Custom Docker Builder
+# OpenClaw Custom Docker Builder
 
-This project provides a custom Docker builder for [moltbot](https://github.com/moltbot/moltbot) with additional tools and multi-architecture support.
+This project provides a custom Docker builder for [OpenClaw](https://github.com/openclaw/openclaw) with additional tools and multi-architecture support.
 
 ## Features
 
-- **Automated builds**: Pulls the latest main branch of moltbot on each build
+- **Automated builds**: Pulls the latest main branch of OpenClaw on each build
 - **Multi-architecture support**: Builds for both `linux/amd64` and `linux/arm64`
-- **Enhanced tooling**: Includes additional tools not in the standard moltbot Docker image
+- **Enhanced tooling**: Includes additional tools not in the standard OpenClaw Docker image
 
 ## Additional Tools
 
@@ -49,15 +49,91 @@ Advanced tool for nano-banana processing, installed via uv.
 
 3. **Run the build:**
    ```bash
-   ./build.sh
+   # Build from main branch (tagged as "latest")
+   ./build.sh latest
+   
+   # Build a specific version tag
+   ./build.sh v2026.1.30
+   
+   # Build a specific version and also tag as "latest"
+   ./build.sh v2026.1.30 true
    ```
+
+## Build Script Parameters
+
+The build script requires one parameter and accepts one optional parameter:
+
+```bash
+./build.sh <tag> [isLatest]
+```
+
+- **tag** (REQUIRED): 
+  - Use `latest` to build from the main branch
+  - Use a version tag (e.g., `v2026.1.30`) to build from a specific OpenClaw release
+  
+- **isLatest** (OPTIONAL, default: `false`):
+  - Set to `true` to tag the image as both the specified tag AND `latest`
+  - Only applies when building a specific version tag
+
+**Examples:**
+```bash
+# Build latest main branch
+./build.sh latest
+
+# Build specific version v2026.1.30
+./build.sh v2026.1.30
+
+# Build v2026.2.1 and also tag as latest
+./build.sh v2026.2.1 true
+```
 
 ## What the Build Script Does
 
-1. **Clone/Update Repository**: Pulls the latest main branch of moltbot
-2. **Replace Dockerfile**: Uses our custom Dockerfile with additional tools
-3. **Setup Buildx**: Configures Docker buildx for multi-arch builds
-4. **Build & Push**: Creates and pushes the multi-arch image to Docker Hub
+1. **Clone/Update Repository**: Clones or fetches the OpenClaw repository
+2. **Checkout Version**: Checks out the specified tag or latest main branch
+3. **Replace Dockerfile**: Uses our custom Dockerfile with additional tools
+4. **Setup Buildx**: Configures Docker buildx for multi-arch builds
+5. **Build & Push**: Creates and pushes the multi-arch image to Docker Hub with appropriate tags
+
+## GitHub Actions
+
+This repository includes automated workflows for building and publishing Docker images to GitHub Container Registry.
+
+### Build and Publish Image
+
+Manually trigger a build via GitHub Actions:
+
+1. Go to the **Actions** tab in this repository
+2. Select **"Build and Publish Docker Image"** workflow
+3. Click **"Run workflow"**
+4. Enter parameters:
+   - **tag**: Version to build (e.g., `latest`, `v2026.1.30`)
+   - **isLatest**: Check to also tag as `latest`
+5. Click **"Run workflow"**
+
+The workflow will:
+- Clone the OpenClaw repository at the specified tag
+- Apply the custom Dockerfile
+- Build for both linux/amd64 and linux/arm64
+- Push to `ghcr.io/ioleksiy/openclaw-docker:TAG`
+
+**Pull the image:**
+```bash
+docker pull ghcr.io/ioleksiy/openclaw-docker:v2026.1.30
+```
+
+### List Available Tags
+
+To see available OpenClaw version tags for building:
+
+1. Go to the **Actions** tab
+2. Select **"List Available OpenClaw Tags"** workflow
+3. Click **"Run workflow"**
+4. View the workflow summary to see the latest 20 version tags
+
+This workflow also runs daily to keep the tag list updated.
+
+Alternatively, check tags directly at: https://github.com/openclaw/openclaw/tags
 
 ## Build Configuration
 
@@ -73,7 +149,7 @@ Packages: git gh jq curl wget unzip ffmpeg imagemagick poppler-utils python3 pyt
 
 ### Updating the Dockerfile
 
-When the upstream moltbot Dockerfile changes, refer to [CUSTOMIZATION.md](CUSTOMIZATION.md) for detailed instructions on how to update while preserving custom additions.
+When the upstream OpenClaw Dockerfile changes, refer to [CUSTOMIZATION.md](CUSTOMIZATION.md) for detailed instructions on how to update while preserving custom additions.
 
 **Quick reference:**
 1. Fetch the latest upstream Dockerfile
@@ -103,13 +179,22 @@ PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 
 ## Usage
 
-After building, you can run the container:
+After building (or using a pre-built image from GitHub Container Registry), you can run the container:
 
+### Using Docker Hub image (built locally via build.sh):
 ```bash
 docker run -d \
   -p 18789:18789 \
   -v ~/.clawdbot:/root/.clawdbot \
-  ioleksiy/clawdbot-gateway:latest
+  ioleksiy/openclaw:latest
+```
+
+### Using GitHub Container Registry image (built via GitHub Actions):
+```bash
+docker run -d \
+  -p 18789:18789 \
+  -v ~/.clawdbot:/root/.clawdbot \
+  ghcr.io/ioleksiy/openclaw-docker:latest
 ```
 
 Or use with docker-compose:
@@ -117,8 +202,10 @@ Or use with docker-compose:
 ```yaml
 version: '3.8'
 services:
-  moltbot:
-    image: ioleksiy/clawdbot-gateway:latest
+  openclaw:
+    # Use either Docker Hub or GitHub Container Registry
+    image: ghcr.io/ioleksiy/openclaw-docker:latest
+    # Or: image: ioleksiy/openclaw:latest
     ports:
       - "18789:18789"
     volumes:
@@ -131,7 +218,17 @@ services:
 Verify that all tools are installed:
 
 ```bash
-docker run --rm ioleksiy/clawdbot-gateway:latest /bin/bash -c "
+# For GitHub Container Registry image:
+docker run --rm ghcr.io/ioleksiy/openclaw-docker:latest /bin/bash -c "
+  echo 'Checking installed tools...' && \
+  himalaya --version && \
+  mcporter --version && \
+  uv --version && \
+  uv tool list
+"
+
+# For Docker Hub image:
+docker run --rm ioleksiy/openclaw:latest /bin/bash -c "
   echo 'Checking installed tools...' && \
   himalaya --version && \
   mcporter --version && \
@@ -169,10 +266,10 @@ Feel free to open issues or submit pull requests for improvements.
 
 ## License
 
-This project follows the same license as moltbot (MIT).
+This project follows the same license as OpenClaw (MIT).
 
 ## Related Links
 
-- [Moltbot GitHub Repository](https://github.com/moltbot/moltbot)
-- [Moltbot Documentation](https://docs.molt.bot/)
+- [OpenClaw GitHub Repository](https://github.com/openclaw/openclaw)
+- [OpenClaw Documentation](https://docs.openclaw.ai/)
 - [Docker Buildx Documentation](https://docs.docker.com/buildx/working-with-buildx/)

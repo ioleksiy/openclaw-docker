@@ -1,5 +1,5 @@
-# Cloned moltbot repository
-moltbot/
+# Cloned openclaw repository
+openclaw/
 
 # Docker build cache
 .docker/

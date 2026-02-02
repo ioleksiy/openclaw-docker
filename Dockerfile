@@ -1,7 +1,7 @@
 # =============================================================================
-# CUSTOM DOCKERFILE FOR MOLTBOT
+# CUSTOM DOCKERFILE FOR OPENCLAW
 # =============================================================================
-# Based on: https://raw.githubusercontent.com/moltbot/moltbot/refs/heads/main/Dockerfile
+# Based on: https://raw.githubusercontent.com/openclaw/openclaw/refs/heads/main/Dockerfile
 # Last synced: 2026-01-28
 #
 # CUSTOM ADDITIONS (search for "CUSTOM:" comments):
@@ -89,10 +89,10 @@ RUN pnpm ui:build
 ENV NODE_ENV=production
 
 # =============================================================================
-# CUSTOM: Create moltbot CLI wrapper
+# CUSTOM: Create openclaw CLI wrapper
 # =============================================================================
-RUN printf '#!/bin/sh\ncd /app && node moltbot.mjs "$@"\n' > /usr/local/bin/moltbot && \
-    chmod +x /usr/local/bin/moltbot
+RUN printf '#!/bin/sh\ncd /app && node openclaw.mjs "$@"\n' > /usr/local/bin/openclaw && \
+    chmod +x /usr/local/bin/openclaw
 
 # Security hardening: Run as non-root user
 # The node:22-bookworm image includes a 'node' user (uid 1000)

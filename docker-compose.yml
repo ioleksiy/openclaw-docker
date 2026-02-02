@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  moltbot:
+  openclaw:
     image: ioleksiy/clawdbot-gateway:latest
-    container_name: moltbot-gateway
+    container_name: openclaw-gateway
     ports:
       - "18789:18789"
     volumes:
-      # Mount moltbot configuration and data
+      # Mount openclaw configuration and data
       - ~/.clawdbot:/root/.clawdbot
       # Optional: Mount workspace directory
       - ~/clawd:/root/clawd
