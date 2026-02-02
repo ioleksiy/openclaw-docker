@@ -107,8 +107,8 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install Playwright (with browsers)
-RUN su node -c 'npm install -g playwright' && \
-    su node -c 'npx playwright install chromium --with-deps'
+RUN npm install -g playwright && \
+    npx playwright install chromium --with-deps
 
 # Set environment for headless Chrome
 ENV CHROME_BIN=/usr/bin/chromium
