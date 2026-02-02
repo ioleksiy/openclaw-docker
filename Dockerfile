@@ -71,6 +71,54 @@ RUN uv tool install nano-pdf || echo "nano-pdf installation failed, continuing..
 # END CUSTOM ADDITIONS - Resume original Dockerfile content
 # =============================================================================
 
+# =============================================================================
+# CUSTOM: Install Chromium + Playwright for browser automation
+# =============================================================================
+
+# Install Chromium dependencies
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    chromium \
+    chromium-driver \
+    # Fonts for proper rendering
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    # Additional libraries Chromium needs
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Install Playwright (with browsers)
+RUN su node -c 'npm install -g playwright' && \
+    su node -c 'npx playwright install chromium --with-deps'
+
+# Set environment for headless Chrome
+ENV CHROME_BIN=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# =============================================================================
+# END CUSTOM: Browser automation ready
+# =============================================================================
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
 COPY patches ./patches
