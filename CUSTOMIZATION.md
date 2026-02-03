@@ -50,20 +50,50 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 **Location:** After uv installation  
 **Purpose:** PDF processing tool  
 **Installation method:** uv tool  
-**Note:** Uses explicit path to uv binary
+**Note:** Installation failure is allowed to continue (non-blocking)
 
 ```dockerfile
-RUN /root/.cargo/bin/uv tool install nano-pdf && \
-    /root/.cargo/bin/uv tool install nano-banana-pro
+RUN uv tool install nano-pdf || echo "nano-pdf installation failed, continuing..."
 ```
 
-### 5. nano-banana-pro (via uv)
-**Location:** Combined with nano-pdf installation  
-**Purpose:** Banana processing tool  
-**Installation method:** uv tool  
-**Note:** Installed in same RUN command as nano-pdf for efficiency
+### 5. Chromium + Playwright
+**Location:** After nano-pdf, before COPY commands  
+**Purpose:** Browser automation for web scraping and testing  
+**Components:**
+- Chromium browser with driver
+- Playwright automation library
+- Required system dependencies and fonts
+- Pre-configured environment variables
 
-See section 4 above for the combined installation command.
+```dockerfile
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    chromium chromium-driver fonts-liberation fonts-noto-color-emoji \
+    libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 \
+    libdbus-1-3 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 \
+    libx11-xcb1 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 \
+    libxrandr2 xdg-utils && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+RUN npm install -g playwright && \
+    npx playwright install chromium --with-deps
+
+ENV CHROME_BIN=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+```
+
+### 6. openclaw CLI Wrapper
+**Location:** After build steps, before USER node  
+**Purpose:** Convenience wrapper for running OpenClaw commands  
+**Path:** `/usr/local/bin/openclaw`  
+**Note:** Must be created before switching to node user
+
+```dockerfile
+RUN printf '#!/bin/sh\ncd /app && node openclaw.mjs "$@"\n' > /usr/local/bin/openclaw && \
+    chmod +x /usr/local/bin/openclaw
+```
 
 ## How to Update When Upstream Changes
 
@@ -86,9 +116,22 @@ This is where all custom installations should be inserted.
 
 ### Step 3: Add Custom Sections
 
-Insert all five custom sections (Himalaya, mcporter, uv, nano-pdf, nano-banana-pro) **BEFORE** the following line:
+Insert all custom sections in this order **BEFORE** the `COPY package.json` line:
+1. Himalaya email CLI
+2. mcporter (via pnpm)
+3. uv Python installer
+4. nano-pdf (via uv)
+5. Chromium + Playwright (browser automation)
+
+Then, **AFTER** all build steps but **BEFORE** `USER node`:
+6. openclaw CLI wrapper
+
 ```dockerfile
+# Custom tools here (sections 1-5)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# ... build steps ...
+# openclaw CLI wrapper here (section 6)
+USER node
 ```
 
 ### Step 4: Update the Header
@@ -106,7 +149,8 @@ Update the header section at the top of the Dockerfile:
 # 2. mcporter - Minecraft porter tool (via pnpm)
 # 3. uv - Python package installer (from Astral)
 # 4. nano-pdf - PDF processing tool (via uv)
-# 5. nano-banana-pro - Banana processing tool (via uv)
+# 5. Chromium + Playwright - Browser automation for web scraping and testing
+# 6. openclaw CLI wrapper - Convenience wrapper for running openclaw commands
 # =============================================================================
 ```
 
@@ -126,15 +170,16 @@ Ensure the final Dockerfile has this structure:
 9. ⭐ CUSTOM: mcporter installation
 10. ⭐ CUSTOM: uv installation
 11. ⭐ CUSTOM: nano-pdf installation
-12. ⭐ CUSTOM: nano-banana-pro installation
+12. ⭐ CUSTOM: Chromium + Playwright installation
 13. COPY package files
 14. pnpm install
 15. COPY all source
 16. Build steps
 17. UI build steps
 18. ENV NODE_ENV=production
-19. USER node (security)
-20. CMD ["node", "dist/index.js"]
+19. ⭐ CUSTOM: openclaw CLI wrapper
+20. USER node (security)
+21. CMD ["node", "dist/index.js"]
 ```
 
 ## Quick Update Script
@@ -171,7 +216,10 @@ docker run --rm test-openclaw /bin/bash -c "
   himalaya --version && \
   mcporter --version && \
   uv --version && \
-  uv tool list
+  uv tool list && \
+  chromium --version && \
+  npx playwright --version && \
+  which openclaw
 "
 ```
 

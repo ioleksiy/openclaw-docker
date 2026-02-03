@@ -9,7 +9,8 @@
 # 2. mcporter - Minecraft porter tool (via pnpm)
 # 3. uv - Python package installer (from Astral)
 # 4. nano-pdf - PDF processing tool (via uv)
-# 5. nano-banana-pro - Banana processing tool (via uv)
+# 5. Chromium + Playwright - Browser automation for web scraping and testing
+# 6. openclaw CLI wrapper - Convenience wrapper for running openclaw commands
 #
 # To update this file with a new upstream Dockerfile:
 # 1. Replace everything from FROM to CMD with the new upstream content

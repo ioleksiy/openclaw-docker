@@ -24,8 +24,15 @@ Fast Python package installer and resolver from Astral.
 ### nano-pdf
 PDF processing tool installed via uv.
 
-### nano-banana-pro
-Advanced tool for nano-banana processing, installed via uv.
+### Chromium + Playwright
+Browser automation stack for web scraping, testing, and automated interactions:
+- **Chromium**: Headless browser engine
+- **Playwright**: Modern automation library for Chromium
+- Includes all necessary dependencies and fonts
+- Pre-configured environment variables for headless operation
+
+### openclaw CLI Wrapper
+Convenience wrapper script (`/usr/local/bin/openclaw`) that allows running OpenClaw commands directly without specifying the full path.
 
 ## Prerequisites
 
@@ -224,7 +231,10 @@ docker run --rm ghcr.io/ioleksiy/openclaw-docker:latest /bin/bash -c "
   himalaya --version && \
   mcporter --version && \
   uv --version && \
-  uv tool list
+  uv tool list && \
+  chromium --version && \
+  npx playwright --version && \
+  which openclaw
 "
 
 # For Docker Hub image:
@@ -233,7 +243,10 @@ docker run --rm ioleksiy/openclaw:latest /bin/bash -c "
   himalaya --version && \
   mcporter --version && \
   uv --version && \
-  uv tool list
+  uv tool list && \
+  chromium --version && \
+  npx playwright --version && \
+  which openclaw
 "
 ```
 
