@@ -56,32 +56,33 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN uv tool install nano-pdf || echo "nano-pdf installation failed, continuing..."
 ```
 
-### 5. Chromium + Playwright
+### 5. Chromium Dependencies for Playwright
 **Location:** After nano-pdf, before COPY commands  
 **Purpose:** Browser automation for web scraping and testing  
 **Components:**
-- Chromium browser with driver
-- Playwright automation library
-- Required system dependencies and fonts
-- Pre-configured environment variables
+- System dependencies required for Chromium
+- Fonts for proper rendering
+- Note: Playwright browsers installed after app dependencies (see below)
 
 ```dockerfile
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    chromium chromium-driver fonts-liberation fonts-noto-color-emoji \
+    fonts-liberation fonts-noto-color-emoji \
     libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 \
     libdbus-1-3 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 \
     libx11-xcb1 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 \
     libxrandr2 xdg-utils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+```
 
-RUN npm install -g playwright && \
-    npx playwright install chromium --with-deps
+### 5b. Playwright Browser Installation
+**Location:** After `pnpm install --frozen-lockfile`, before `COPY . .`  
+**Purpose:** Install Chromium browser for the app's local playwright-core  
+**Method:** Uses the local playwright-core CLI from node_modules
 
-ENV CHROME_BIN=/usr/bin/chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+```dockerfile
+RUN node /app/node_modules/playwright-core/cli.js install chromium
 ```
 
 ### 6. openclaw CLI Wrapper
@@ -116,19 +117,27 @@ This is where all custom installations should be inserted.
 
 ### Step 3: Add Custom Sections
 
-Insert all custom sections in this order **BEFORE** the `COPY package.json` line:
+Insert all custom sections in this order:
+
+**BEFORE** the `COPY package.json` line:
 1. Himalaya email CLI
 2. mcporter (via pnpm)
 3. uv Python installer
 4. nano-pdf (via uv)
-5. Chromium + Playwright (browser automation)
+5. Chromium dependencies for Playwright
 
-Then, **AFTER** all build steps but **BEFORE** `USER node`:
+**AFTER** `pnpm install --frozen-lockfile` but **BEFORE** `COPY . .`:
+5b. Playwright browser installation (using local playwright-core)
+
+**AFTER** all build steps but **BEFORE** `USER node`:
 6. openclaw CLI wrapper
 
 ```dockerfile
 # Custom tools here (sections 1-5)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
+# Playwright browser installation here (section 5b)
+COPY . .
 # ... build steps ...
 # openclaw CLI wrapper here (section 6)
 USER node
@@ -170,11 +179,12 @@ Ensure the final Dockerfile has this structure:
 9. ⭐ CUSTOM: mcporter installation
 10. ⭐ CUSTOM: uv installation
 11. ⭐ CUSTOM: nano-pdf installation
-12. ⭐ CUSTOM: Chromium + Playwright installation
+12. ⭐ CUSTOM: Chromium dependencies installation
 13. COPY package files
 14. pnpm install
-15. COPY all source
-16. Build steps
+15. ⭐ CUSTOM: Playwright browser installation
+16. COPY all source
+17. Build steps
 17. UI build steps
 18. ENV NODE_ENV=production
 19. ⭐ CUSTOM: openclaw CLI wrapper
@@ -217,8 +227,7 @@ docker run --rm test-openclaw /bin/bash -c "
   mcporter --version && \
   uv --version && \
   uv tool list && \
-  chromium --version && \
-  npx playwright --version && \
+  node /app/node_modules/playwright-core/cli.js --version && \
   which openclaw
 "
 ```

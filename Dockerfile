@@ -3,13 +3,15 @@
 # =============================================================================
 # Based on: https://raw.githubusercontent.com/openclaw/openclaw/refs/heads/main/Dockerfile
 # Last synced: 2026-01-28
+# Last modified: 2026-02-22
 #
 # CUSTOM ADDITIONS (search for "CUSTOM:" comments):
 # 1. Himalaya email CLI - Multi-arch email client (x86_64/aarch64)
 # 2. mcporter - Minecraft porter tool (via pnpm)
 # 3. uv - Python package installer (from Astral)
 # 4. nano-pdf - PDF processing tool (via uv)
-# 5. Chromium + Playwright - Browser automation for web scraping and testing
+# 5. Chromium dependencies - System libraries for Playwright browser automation
+# 5b. Playwright browser installation - Chromium installed via local playwright-core
 # 6. openclaw CLI wrapper - Convenience wrapper for running openclaw commands
 #
 # To update this file with a new upstream Dockerfile:
@@ -73,14 +75,12 @@ RUN uv tool install nano-pdf || echo "nano-pdf installation failed, continuing..
 # =============================================================================
 
 # =============================================================================
-# CUSTOM: Install Chromium + Playwright for browser automation
+# CUSTOM: Install Chromium dependencies for Playwright
 # =============================================================================
 
-# Install Chromium dependencies
+# Install system dependencies for Chromium/Playwright
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    chromium \
-    chromium-driver \
     # Fonts for proper rendering
     fonts-liberation \
     fonts-noto-color-emoji \
@@ -107,17 +107,10 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# Install Playwright (with browsers)
-RUN npm install -g playwright && \
-    npx playwright install chromium --with-deps
-
-# Set environment for headless Chrome
-ENV CHROME_BIN=/usr/bin/chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# Note: Playwright browsers will be installed after app dependencies (see below)
 
 # =============================================================================
-# END CUSTOM: Browser automation ready
+# END CUSTOM: System dependencies ready
 # =============================================================================
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -126,6 +119,17 @@ COPY patches ./patches
 COPY scripts ./scripts
 
 RUN pnpm install --frozen-lockfile
+
+# =============================================================================
+# CUSTOM: Install Playwright browsers using local installation
+# =============================================================================
+# Install Chromium browser for the local playwright-core in node_modules
+# This ensures the app's playwright installation can find the browsers
+RUN node /app/node_modules/playwright-core/cli.js install chromium
+
+# =============================================================================
+# END CUSTOM: Playwright browsers installed
+# =============================================================================
 
 COPY . .
 

@@ -26,10 +26,10 @@ PDF processing tool installed via uv.
 
 ### Chromium + Playwright
 Browser automation stack for web scraping, testing, and automated interactions:
-- **Chromium**: Headless browser engine
+- **Chromium**: Headless browser engine (installed via Playwright)
 - **Playwright**: Modern automation library for Chromium
-- Includes all necessary dependencies and fonts
-- Pre-configured environment variables for headless operation
+- Includes all necessary system dependencies and fonts
+- Browsers installed using local playwright-core from app dependencies
 
 ### openclaw CLI Wrapper
 Convenience wrapper script (`/usr/local/bin/openclaw`) that allows running OpenClaw commands directly without specifying the full path.
@@ -232,8 +232,7 @@ docker run --rm ghcr.io/ioleksiy/openclaw-docker:latest /bin/bash -c "
   mcporter --version && \
   uv --version && \
   uv tool list && \
-  chromium --version && \
-  npx playwright --version && \
+  node /app/node_modules/playwright-core/cli.js --version && \
   which openclaw
 "
 
@@ -244,8 +243,7 @@ docker run --rm ioleksiy/openclaw:latest /bin/bash -c "
   mcporter --version && \
   uv --version && \
   uv tool list && \
-  chromium --version && \
-  npx playwright --version && \
+  node /app/node_modules/playwright-core/cli.js --version && \
   which openclaw
 "
 ```
