@@ -153,9 +153,19 @@ ENV NODE_ENV=production
 RUN printf '#!/bin/sh\ncd /app && node openclaw.mjs "$@"\n' > /usr/local/bin/openclaw && \
     chmod +x /usr/local/bin/openclaw
 
+# =============================================================================
+# CUSTOM: Runtime package installation + gosu for privilege dropping
+# =============================================================================
+RUN apt-get update && apt-get install -y --no-install-recommends gosu && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Security hardening: Run as non-root user
 # The node:22-bookworm image includes a 'node' user (uid 1000)
 # This reduces the attack surface by preventing container escape via root privileges
-USER node
+# USER node
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["node", "dist/index.js"]
