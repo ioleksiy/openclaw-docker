@@ -12,19 +12,28 @@ else
   echo "[openclaw-entrypoint] OPENCLAW_RUNTIME_PACKAGES not set; skipping runtime package installation"
 fi
 
-# Drop privileges to node user only when running as root
-if [ "$(id -u)" -eq 0 ]; then
-  if command -v gosu >/dev/null 2>&1; then
-    exec gosu node "$@"
+# Drop privileges only when explicitly requested.
+# Default behavior is to run as current user (root in this image) to avoid
+# authentication prompts from tools that may attempt privileged operations.
+if [ "${OPENCLAW_RUN_AS_NODE:-false}" = "true" ]; then
+  if [ "$(id -u)" -eq 0 ]; then
+    if command -v gosu >/dev/null 2>&1; then
+      echo "[openclaw-entrypoint] Dropping privileges to user: node (gosu)"
+      exec gosu node "$@"
+    fi
+
+    if command -v runuser >/dev/null 2>&1; then
+      echo "[openclaw-entrypoint] Dropping privileges to user: node (runuser)"
+      exec runuser -u node -- "$@"
+    fi
+
+    echo "[openclaw-entrypoint] WARNING: OPENCLAW_RUN_AS_NODE=true but gosu/runuser not found; running as root"
+    exec "$@"
   fi
 
-  if command -v runuser >/dev/null 2>&1; then
-    exec runuser -u node -- "$@"
-  fi
-
-  echo "[openclaw-entrypoint] WARNING: gosu/runuser not found; running as root"
+  echo "[openclaw-entrypoint] OPENCLAW_RUN_AS_NODE=true but already non-root; continuing"
   exec "$@"
 fi
 
-# Already non-root; run command as current user
+echo "[openclaw-entrypoint] Running as current user (uid=$(id -u), user=$(id -un))"
 exec "$@"

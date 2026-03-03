@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   openclaw:
-    image: ioleksiy/clawdbot-gateway:latest
+    image: ghcr.io/ioleksiy/openclaw-docker:latest
     container_name: openclaw-gateway
     ports:
       - "18789:18789"
