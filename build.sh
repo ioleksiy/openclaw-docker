@@ -83,10 +83,11 @@ else
 fi
 echo ""
 
-# Step 2: Copy our custom Dockerfile
-echo -e "${YELLOW}Replacing Dockerfile with custom version...${NC}"
+# Step 2: Copy our custom Dockerfile and entrypoint
+echo -e "${YELLOW}Replacing Dockerfile and entrypoint with custom versions...${NC}"
 cp Dockerfile "$REPO_DIR/Dockerfile"
-echo -e "${GREEN}✓ Custom Dockerfile in place${NC}"
+cp entrypoint.sh "$REPO_DIR/entrypoint.sh"
+echo -e "${GREEN}✓ Custom Dockerfile and entrypoint in place${NC}"
 echo ""
 
 # Step 3: Setup Docker buildx if not already configured
