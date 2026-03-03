@@ -44,10 +44,21 @@ jobs:
           
           cd ..
 
-      - name: Copy custom Dockerfile
+      - name: Copy custom Dockerfile and entrypoint
         run: |
           cp Dockerfile openclaw/Dockerfile
-          echo "Custom Dockerfile copied to openclaw directory"
+          cp entrypoint.sh openclaw/entrypoint.sh
+
+          # Ensure custom entrypoint is not excluded from Docker build context
+          if [ -f openclaw/.dockerignore ]; then
+            if ! grep -q '^!entrypoint.sh$' openclaw/.dockerignore; then
+              echo '!entrypoint.sh' >> openclaw/.dockerignore
+            fi
+          else
+            echo '!entrypoint.sh' > openclaw/.dockerignore
+          fi
+
+          echo "Custom Dockerfile and entrypoint copied to openclaw directory"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
